@@ -1,0 +1,9 @@
+.idea
+build
+.DS_Store
+out
+*.out
+build.tar
+gradle/
+gradlew*
+.gradle/

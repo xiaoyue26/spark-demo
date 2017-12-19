@@ -1,0 +1,25 @@
+server.port:
+  8000
+app.name: test
+spark.home: /home/maintain/fengmq/spark
+master.uri: local[2]
+
+
+
+
+
+spring.jpa.hibernate.ddl-auto: create-drop
+
+
+### 使用hikari:
+spring.datasource:
+  type: com.zaxxer.hikari.HikariDataSource
+
+spring.datasource.hikari:
+  idle-timeout: 1000
+  jdbc-url: jdbc:mysql://pipe-reader:3306/pipe_ape?characterEncoding=utf8&useSSL=true
+  username: pipe
+  password: pipe123
+  driverClassName: com.mysql.jdbc.Driver
+  maximumPoolSize: 5
+### hikari end
