@@ -13,8 +13,8 @@ import java.sql.SQLException;
 /**
  * Created by xiaoyue26 on 17/12/19.
  */
-//@Configuration
-//@ConfigurationProperties(prefix = "spring.datasource.hikari")
+@Configuration
+@ConfigurationProperties(prefix = "spring.datasource.hikari")
 public class HikariDSConfig extends HikariConfig {
     @Primary
     @Bean

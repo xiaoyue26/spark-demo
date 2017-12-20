@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 /**
  * Created by xiaoyue26 on 17/12/20.
  */
-@Configuration
+//@Configuration
 public class AutoDruidDataSourceConfig {
     @Primary
     @Bean
