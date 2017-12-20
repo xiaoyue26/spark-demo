@@ -1,4 +1,4 @@
-package com.xiaoyue26.www;
+package com.xiaoyue26.www.config;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -26,17 +26,15 @@ public class ApplicationConfig {
     @Value("${spark.home}")
     private String sparkHome;
 
-    @Value("${master.uri:local}")
+    @Value("${master.uri:local[2]}")
     private String masterUri;
 
     @Bean
     public SparkConf sparkConf() {
-        SparkConf sparkConf = new SparkConf()
+        return new SparkConf()
                 .setAppName(appName)
                 .setSparkHome(sparkHome)
                 .setMaster(masterUri);
-
-        return sparkConf;
     }
 
     @Bean

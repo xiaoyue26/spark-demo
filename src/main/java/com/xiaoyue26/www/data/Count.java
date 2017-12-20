@@ -1,4 +1,4 @@
-package com.xiaoyue26.www;
+package com.xiaoyue26.www.data;
 
 /**
  * Created by xiaoyue26 on 17/12/19.

@@ -1,5 +1,7 @@
-package com.xiaoyue26.www;
+package com.xiaoyue26.www.ctrl;
 
+import com.xiaoyue26.www.data.Count;
+import com.xiaoyue26.www.service.WordCount;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

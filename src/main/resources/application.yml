@@ -2,24 +2,34 @@ server.port:
   8000
 app.name: test
 spark.home: /home/maintain/fengmq/spark
-master.uri: local[2]
+#master.uri: local[2]
+master.uri: yarn-cluster
+
+spring.datasource.primary.url: jdbc:mysql://xxx-reader:3306/xxx_ape?characterEncoding=utf8&useSSL=true
+spring.datasource.primary.username: xxx
+spring.datasource.primary.password: xxx123
+spring.datasource.primary.driver-class-name: com.mysql.jdbc.Driver
 
 
 
 
+###  使用druid: =====>###
+spring.datasource.type: com.alibaba.druid.pool.DruidDataSource
+spring.datasource.druid.initial-size: 5
+spring.datasource.druid.max-active: 5
+spring.datasource.druid.driver-class-name: com.mysql.jdbc.Driver
 
-spring.jpa.hibernate.ddl-auto: create-drop
 
 
-### 使用hikari:
-spring.datasource:
-  type: com.zaxxer.hikari.HikariDataSource
+# 数据源 one
+spring.datasource.druid.one:
+  max-active: 10
+  max-wait: 10000
+  url: jdbc:mysql://xxx-reader:3306/xxx_ape?characterEncoding=utf8&useSSL=true
+  driver-class-name: com.mysql.jdbc.Driver
+  username: xxx
+  password: xxx123
+  initial-size: 5
+  min-idle: 5
 
-spring.datasource.hikari:
-  idle-timeout: 1000
-  jdbc-url: jdbc:mysql://pipe-reader:3306/pipe_ape?characterEncoding=utf8&useSSL=true
-  username: pipe
-  password: pipe123
-  driverClassName: com.mysql.jdbc.Driver
-  maximumPoolSize: 5
-### hikari end
+### <===== end of druid ###

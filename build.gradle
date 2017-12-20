@@ -4,7 +4,26 @@ version '1.0-SNAPSHOT'
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'scala'
-apply plugin: 'spring-boot'
+apply plugin: 'org.springframework.boot'
+apply plugin: "com.github.johnrengelman.shadow" // grade shadowJar
+
+shadowJar {
+    zip64 true
+    mergeServiceFiles()
+    exclude "META-INF/*.SF"
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    exclude "LICENSE*"
+    manifest {
+        attributes 'Main-Class': 'com.xiaoyue26.www.Application'
+
+    }
+    append 'META-INF/spring.handlers'
+    append 'META-INF/spring.factories'
+    append 'META-INF/spring.schemas'
+
+
+}
 sourceCompatibility = 1.8
 
 repositories {
@@ -30,12 +49,22 @@ dependencies {
 
     // 加入jpa
     compile 'org.springframework.boot:spring-boot-starter-data-jpa'
+    compile 'org.springframework.boot:spring-boot-starter-jdbc'
     compile 'mysql:mysql-connector-java:5.1.44'
     compile 'com.zaxxer:HikariCP'
+    compile 'com.alibaba:druid-spring-boot-starter:1.1.6'
 
-    // 加入
+    compile("org.springframework.boot:spring-boot-starter")
+    compile("org.springframework.boot:spring-boot-starter-jetty")
+
+    // 加入actuator,看看bean为啥没注入成功
+    //compile("org.springframework.boot:spring-boot-starter-actuator")
 
 
+}
+configurations {
+    compile.exclude module: 'spring-boot-starter-tomcat'
+    compile.exclude group: 'org.apache.tomcat'
 }
 
 buildscript {
@@ -49,6 +78,7 @@ buildscript {
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath "com.github.jengelman.gradle.plugins:shadow:2.0.1"
     }
 }
 

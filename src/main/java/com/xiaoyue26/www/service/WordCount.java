@@ -1,5 +1,10 @@
-package com.xiaoyue26.www;
+package com.xiaoyue26.www.service;
 
+import com.xiaoyue26.www.config.ApplicationConfig;
+import com.xiaoyue26.www.data.Count;
+import com.xiaoyue26.www.data.Word;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.RelationalGroupedDataset;
 import org.apache.spark.sql.Row;
@@ -9,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.apache.spark.sql.functions.col;
