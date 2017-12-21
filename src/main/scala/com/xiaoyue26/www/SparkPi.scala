@@ -12,7 +12,7 @@ import scala.math.random
 /**
   * Created by xiaoyue26 on 17/12/20.
   */
-@Component
+//@Component
 class SparkPi extends ISparkJob {
   @Autowired
   var session: SparkSession = _

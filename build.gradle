@@ -60,6 +60,15 @@ dependencies {
     // 加入actuator,看看bean为啥没注入成功
     //compile("org.springframework.boot:spring-boot-starter-actuator")
 
+    // 加入zk
+    compile 'org.apache.zookeeper:zookeeper:3.4.5'
+
+    // 加入hbase:
+    compile 'org.apache.hbase:hbase-client:1.1.1'
+    compile 'org.apache.hbase:hbase-common:1.1.1'
+    compile 'org.apache.hbase:hbase-server:1.1.1'
+    compile 'com.fenbi:fenbi-hbase:0.1.7'
+
 
 }
 configurations {
@@ -84,14 +93,16 @@ buildscript {
 
 sourceSets {
     main {
-        scala{
-            srcDirs = ['src/main/java','src/main/scala']
-        }
         java {
             srcDirs = ['src/main/java']
         }
 
+        scala{
+            srcDirs = ['src/main/java','src/main/scala']
+        }
     }
+
+
     test {
 
         java {
