@@ -16,6 +16,7 @@ class NetWordCount extends ISparkJob {
 
   override def run(): Unit = {
     val ssc: StreamingContext = new StreamingContext(session.sparkContext, Seconds(3))
+    ssc.checkpoint("hdfs://f04/user/fengmq01/checkpoint")
     val lines = ssc.socketTextStream("dx-pipe-cpu1-pm", 9092)
     val words = lines.flatMap(_.split(" "))
     val pairs = words.map(word => (word, 1))

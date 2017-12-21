@@ -32,7 +32,7 @@ repositories {
     maven { url 'http://conjars.org/repo' }//自定义maven仓库地址
     jcenter()//新的中央远程仓库，兼容maven中心仓库
     mavenCentral()
-    maven { url 'http://maven.zhenguanyu.com/content/repositories/releases/'}
+    maven { url 'http://maven.zhenguanyu.com/content/repositories/releases/' }
 }
 
 dependencies {
@@ -97,8 +97,8 @@ sourceSets {
             srcDirs = ['src/main/java']
         }
 
-        scala{
-            srcDirs = ['src/main/java','src/main/scala']
+        scala {
+            srcDirs = ['src/main/java', 'src/main/scala']
         }
     }
 
@@ -110,13 +110,15 @@ sourceSets {
         }
     }
 }
-task createDirs << { // 运行缩写: gradle cDirs
-    sourceSets*.java.srcDirs*.each { it.mkdirs() }
-    sourceSets*.scala.srcDirs*.each { it.mkdirs() }
-    sourceSets*.resources.srcDirs*.each { it.mkdirs() }
+task createDirs { // 运行缩写: gradle cDirs
+    doLast {
+        sourceSets*.java.srcDirs*.each { it.mkdirs() }
+        sourceSets*.scala.srcDirs*.each { it.mkdirs() }
+        sourceSets*.resources.srcDirs*.each { it.mkdirs() }
+    }
 }
 
 configurations {
-    all*.exclude group:'org.springframework.boot',
-            module:'spring-boot-starter-logging'
+    all*.exclude group: 'org.springframework.boot',
+            module: 'spring-boot-starter-logging'
 }
