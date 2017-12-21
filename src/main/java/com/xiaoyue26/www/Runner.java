@@ -6,6 +6,7 @@ import com.xiaoyue26.www.service.ISparkJob;
 import com.xiaoyue26.www.service.WordCount;
 import com.xiaoyue26.www.storage.ITestDAO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -19,12 +20,13 @@ import java.util.List;
 @Component
 public class Runner implements CommandLineRunner {
     @Autowired
-    WordCount wordCount;
+    private WordCount wordCount;
     @Autowired
-    ITestDAO testDAO;
+    private ITestDAO testDAO;
 
+    @Qualifier("netWordCount")
     @Autowired
-    ISparkJob job;
+    private ISparkJob job;
 
 
     @Autowired

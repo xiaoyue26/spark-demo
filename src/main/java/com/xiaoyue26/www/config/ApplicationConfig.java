@@ -34,7 +34,8 @@ public class ApplicationConfig {
         return new SparkConf()
                 .setAppName(appName)
                 .setSparkHome(sparkHome)
-                .setMaster(masterUri);
+                .setMaster(masterUri)
+                .set("spark.streaming.stopGracefullyOnShutdown","true");
     }
 
     @Bean
