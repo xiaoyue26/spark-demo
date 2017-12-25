@@ -14,9 +14,15 @@ class NetWordCount extends ISparkJob {
   @Autowired
   var session: SparkSession = _
 
-  override def run(): Unit = {
+  val checkPointDir = "hdfs://f04/user/fengmq01/checkpoint"
+  def createSsc(): StreamingContext ={
     val ssc: StreamingContext = new StreamingContext(session.sparkContext, Seconds(3))
-    //ssc.checkpoint("hdfs://f04/user/fengmq01/checkpoint") // 加了checkpoint的话,由于"exit"常量无法序列化,会出错.
+    ssc.checkpoint(checkPointDir) // 加了checkpoint的话,由于ssc无法序列化,会出错.
+    return ssc
+  }
+  override def run(): Unit = {
+    //val ssc= StreamingContext.getOrCreate(checkPointDir,createSsc)
+    val ssc: StreamingContext = new StreamingContext(session.sparkContext, Seconds(3))
     val lines = ssc.socketTextStream("dx-pipe-cpu1-pm", 9092)
     val EXIT = "exit"
     // check exit begin
@@ -24,8 +30,10 @@ class NetWordCount extends ISparkJob {
       rdd => {
         if (!rdd.isEmpty() && EXIT.equals(rdd.first())) {
           ssc.stop(false)
+          //println("kkkkkkkkkkkk")
         }
       }
+
     )
     // check exit end
 
