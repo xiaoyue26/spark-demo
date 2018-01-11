@@ -24,7 +24,9 @@ public class Runner implements CommandLineRunner {
     @Autowired
     private ITestDAO testDAO;
 
-    @Qualifier("netWordCount")
+    //@Qualifier("netWordCount")
+    //@Qualifier("decemberWordCountReader")
+    @Qualifier("decemberReader")
     @Autowired
     private ISparkJob job;
 
@@ -35,7 +37,7 @@ public class Runner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        List<Count> res = wordCount.count();
+        /*List<Count> res = wordCount.count();
         for (Count c : res) {
             System.out.println(c.getWord() + ":" + c.getCount());
         }
@@ -48,7 +50,8 @@ public class Runner implements CommandLineRunner {
         t.setCol1(1);
         t.setCol2("col2_3");
         testDAO.addTestEntity(t);
-        // spark pi
+        */
+        // spark job
         job.run();
 
         SpringApplication.exit(context);

@@ -69,6 +69,12 @@ dependencies {
     compile 'org.apache.hbase:hbase-server:1.1.1'
     compile 'com.fenbi:fenbi-hbase:0.1.7'
 
+    // 加入kafka
+    compile group: 'org.apache.spark', name: 'spark-streaming-kafka_2.11', version: '1.6.3'
+    // 因为上面那个kafka的包最高只有1.6.3版本,里面引用了spark-core1.5.2的logging代码,因此还得引1.5.2包给它用
+    compile 'org.apache.spark:spark-core_2.11:1.5.2'
+
+
 
 }
 configurations {
@@ -121,4 +127,15 @@ task createDirs { // 运行缩写: gradle cDirs
 configurations {
     all*.exclude group: 'org.springframework.boot',
             module: 'spring-boot-starter-logging'
+}
+
+// 自动下载源码:
+
+apply plugin: 'idea'
+
+idea {
+    module {
+        //downloadJavadoc = true
+        downloadSources = true
+    }
 }
