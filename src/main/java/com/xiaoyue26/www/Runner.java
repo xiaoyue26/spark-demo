@@ -26,7 +26,9 @@ public class Runner implements CommandLineRunner {
 
     //@Qualifier("netWordCount")
     //@Qualifier("decemberWordCountReader")
-    @Qualifier("decemberReader")
+    @Qualifier("solarReader")
+    //@Qualifier("requestSolarReader")
+    //@Qualifier("decemberReader")
     @Autowired
     private ISparkJob job;
 

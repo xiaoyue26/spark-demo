@@ -32,6 +32,7 @@ class ZKOffsetsPurgatory(zkIO: ZookeeperIO, zookeeperConnect: String) extends Ru
         }
       }
       val pathAndValue = queue.poll(1, TimeUnit.SECONDS)
+      LOG.info("######### 2 pathAndValue: "+pathAndValue)
       if (pathAndValue != null) {
         try {
           LOG.info("zkIO.setData path=" + pathAndValue._1 + "  value=" + pathAndValue._2)

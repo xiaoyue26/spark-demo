@@ -1,26 +1,16 @@
 package com.xiaoyue26.www.steaming
 
-import java.sql.{Connection, DriverManager, PreparedStatement}
-import java.util.regex.Pattern
-
 import com.xiaoyue26.www.service.ISparkJob
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.storage.StorageLevel
-import org.apache.spark.streaming.{Duration, Seconds, StreamingContext}
-import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils}
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Service
 import com.xiaoyue26.www.steaming.utils.{StreamConf, ZKOffsetsPurgatory}
 import com.xiaoyue26.www.utils.{TimeUtils, ZookeeperIO}
-import kafka.common.TopicAndPartition
-import kafka.message.MessageAndMetadata
 import kafka.serializer.StringDecoder
 import org.apache.curator.framework.imps.CuratorFrameworkState
-import org.apache.spark.rdd.RDD
-import org.apache.spark.streaming.dstream.{InputDStream, ReceiverInputDStream}
-import org.slf4j.{Logger, LoggerFactory}
-
-import scala.collection.JavaConversions._
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.streaming.dstream.InputDStream
+import org.apache.spark.streaming.kafka.KafkaUtils
+import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
 
 /**
   * Created by xiaoyue26 on 18/1/2.
@@ -28,7 +18,7 @@ import scala.collection.JavaConversions._
   * // Serializable
   */
 @Service
-class DecemberReader extends ISparkJob {
+class SolarReader extends ISparkJob {
   @Autowired
   var session: SparkSession = _
   var ssc: StreamingContext = _
@@ -37,12 +27,12 @@ class DecemberReader extends ISparkJob {
   def getConf: StreamConf = {
     val conf = new StreamConf()
     conf.gap = Seconds(3)
-    conf.topic = "december"
-    conf.groupId = "groupid"
-    conf.num_partitions = 1
+    conf.topic = "solar"
+    conf.groupId = "groupmy"
+    conf.num_partitions = 12
     conf.zkList = "pipe-zk1:2181"
     conf.broker_list = "dx-pipe-sata11-pm:9092,dx-pipe-sata12-pm:9092,dx-pipe-sata13-pm:9092,dx-pipe-sata14-pm:9092,dx-pipe-sata15-pm:9092"
-    conf.insertFields = List("timestamp", "count")
+    conf.insertFields = List("timestamp", "line")
     return conf
   }
 
@@ -54,6 +44,7 @@ class DecemberReader extends ISparkJob {
     val zkPurgatory = conf.zkPurgatory
     zkIO.connect(conf.zkList)
     if (conf.zkIO.getClient.getState != CuratorFrameworkState.STARTED) {
+      conf.LOG.info("######### 1 init")
       zkIO.connect(conf.zkList)
       if (zkIO.getClient.getState != CuratorFrameworkState.STARTED) {
         throw new RuntimeException("zookeeper initialize failed")
@@ -87,13 +78,14 @@ class DecemberReader extends ISparkJob {
       rdd => {
         rdd.foreachPartition(
           iter => {
-            val buckets = scala.collection.mutable.Map[(Long, List[String]), Long]()
+            //val buckets = scala.collection.mutable.Map[(Long, List[String]), Long]()
             iter.foreach(
               keyAndValue => {
                 val line = keyAndValue._2
                 val otherValues = scala.collection.mutable.ListBuffer[String]()
                 val matcher = conf.pat.matcher(line)
-                if (matcher.find()) {
+                println(line)
+                /*if (matcher.find()) {
                   var ts = matcher.group(1).toLong
                   conf.interval match {
                     case "SEC" => ts = ts - ts % 1000
@@ -101,12 +93,12 @@ class DecemberReader extends ISparkJob {
                     case "HOU" => ts = ts - ts % 3600000
                   }
                   buckets((ts, otherValues.toList)) = buckets.getOrElse((ts, otherValues.toList), 0L) + 1
-                }
+                }*/
               }
             )
             println("buckets calculated and start to insertDB at:" + TimeUtils.getCurrentTimestamp)
             try {
-              conf.insertIntoDB(buckets)
+              //conf.insertIntoDB(buckets)
             } catch {
               case e: Exception => println(e)
             }
@@ -118,6 +110,7 @@ class DecemberReader extends ISparkJob {
     )
     ssc.start()
     ssc.awaitTermination()
+    //ssc.awaitTerminationOrTimeout(60 * 1000)
 
   }
 
