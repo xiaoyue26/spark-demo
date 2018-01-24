@@ -13,13 +13,14 @@ import scala.util.control.NonFatal
   */
 object ZKOffsetsPurgatory {}
 
-class ZKOffsetsPurgatory(zkIO: ZookeeperIO, zookeeperConnect: String) extends Runnable {
+class ZKOffsetsPurgatory(zkIO: ZookeeperIO, zookeeperConnect: String) extends Runnable with Serializable {
 
   private val queue = new LinkedBlockingQueue[(String, Long)]()
   private val LOG = LoggerFactory.getLogger(ZKOffsetsPurgatory.getClass)
 
   def add(path: String, value: Long): Unit = {
     queue.put((path, value))
+    LOG.info("ZKOffsetsPurgator put success")
   }
 
   override def run(): Unit = {
@@ -32,7 +33,7 @@ class ZKOffsetsPurgatory(zkIO: ZookeeperIO, zookeeperConnect: String) extends Ru
         }
       }
       val pathAndValue = queue.poll(1, TimeUnit.SECONDS)
-      LOG.info("######### 2 pathAndValue: "+pathAndValue)
+      LOG.info("######### 2 pathAndValue: " + pathAndValue)
       if (pathAndValue != null) {
         try {
           LOG.info("zkIO.setData path=" + pathAndValue._1 + "  value=" + pathAndValue._2)

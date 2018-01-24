@@ -8,13 +8,14 @@ import org.apache.curator.framework.recipes.cache.NodeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.zookeeper.data.Stat;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by xiaoyue26 on 18/1/3.
  */
-public class ZookeeperIO {
+public class ZookeeperIO implements Serializable{
     private CuratorFramework client;
 
     public void connect(String connectionString) {

@@ -1,11 +1,13 @@
 package com.xiaoyue26.www.steaming.utils
 
 import java.sql.{Connection, DriverManager, PreparedStatement}
+import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 import com.xiaoyue26.www.utils.ZookeeperIO
 import kafka.common.TopicAndPartition
 import kafka.message.MessageAndMetadata
+import org.apache.curator.framework.imps.CuratorFrameworkState
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream.InputDStream
 import org.apache.spark.streaming.kafka.HasOffsetRanges
@@ -13,6 +15,7 @@ import org.apache.spark.streaming.{Duration, StreamingContext}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConversions._
+import scala.util.control.NonFatal
 
 /**
   * Created by xiaoyue26 on 18/1/2.
@@ -51,7 +54,10 @@ class StreamConf extends java.io.Serializable {
   }
 
   def updatePartitionsOffsets(rdd: RDD[(String, String)]): Unit = {
-
+    LOG.info("groupid: " + groupId)
+    LOG.info("topic: " + topic)
+    val t = rdd.asInstanceOf[HasOffsetRanges]
+    LOG.info("offsetRanges:" + t.offsetRanges.length)
     rdd.asInstanceOf[HasOffsetRanges].offsetRanges.foreach {
       offsetRange => {
         commitOffsetToZookeeper(offsetRange.partition + "", offsetRange.untilOffset)
@@ -59,8 +65,29 @@ class StreamConf extends java.io.Serializable {
     }
   }
 
-  private def commitOffsetToZookeeper(partitionId: String, latestOffset: Long): Unit = {
-    zkPurgatory.add(f"/consumers/$groupId/offsets/$topic/$partitionId", latestOffset)
+  def commitOffsetToZookeeper(partitionId: String, latestOffset: Long): Unit = {
+    LOG.info("groupid: " + groupId)
+    LOG.info("topic: " + topic)
+    LOG.info("partitionId: " + partitionId)
+    //zkPurgatory.add(f"/consumers/$groupId/offsets/$topic/$partitionId", latestOffset)
+    commitNow(partitionId, latestOffset)
+  }
+
+  def commitNow(partitionId: String, latestOffset: Long): Unit = {
+    if (zkIO.getClient.getState != CuratorFrameworkState.STARTED) {
+      zkIO.connect(zkList)
+      if (zkIO.getClient.getState != CuratorFrameworkState.STARTED) {
+        throw new RuntimeException("zookeeper initialize failed")
+      }
+    }
+    try {
+      val path = f"/consumers/$groupId/offsets/$topic/$partitionId"
+      LOG.info("zkIO.setData path=" + path + "  value=" + latestOffset)
+      zkIO.setData(path, new String(latestOffset + "").getBytes)
+    } catch {
+      case NonFatal(e) => LOG.error("", e)
+    }
+    zkIO.close()
   }
 
   def insertIntoDB(buckets: scala.collection.mutable.Map[(Long, List[String]), Long]): Unit = {
