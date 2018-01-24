@@ -26,7 +26,7 @@ public class Runner implements CommandLineRunner {
 
     //@Qualifier("netWordCount")
     //@Qualifier("decemberWordCountReader")
-    @Qualifier("solarReader")
+    @Qualifier("conanReader")
     //@Qualifier("requestSolarReader")
     //@Qualifier("decemberReader")
     @Autowired

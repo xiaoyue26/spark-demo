@@ -88,4 +88,37 @@ class StreamConf extends java.io.Serializable {
     stmt.executeBatch()
     conn.close()
   }
+
+  // bucket:  userid,  (min_time,vendor)
+  def insertBucketConan(buckets: scala.collection.mutable.Map[Long, (Long, String)]): Unit = {
+    var conn: Connection = DriverManager.getConnection(DB_CONNECT)
+    println("buckets size=" + buckets.size)
+    var sql = f"insert INTO $table " +
+      "(userid,min_time,vendor) " +
+      "values (?,?,?) " +
+      "ON DUPLICATE KEY UPDATE " +
+      "min_time=if(min_time>values(min_time),VALUES(min_time),min_time)" +
+      ",vendor=if(vendor='unset',VALUES(vendor),vendor)"
+    println("sql = " + sql)
+    val stmt: PreparedStatement = conn.prepareStatement(sql)
+    try {
+      buckets.foreach(unit => {
+        val userid = unit._1
+        val ts_vendor = unit._2
+        val ts = ts_vendor._1
+        val vendor = ts_vendor._2
+        stmt.setLong(1, userid)
+        stmt.setLong(2, ts)
+        stmt.setString(3, vendor)
+        stmt.addBatch()
+      })
+      stmt.executeBatch()
+    }
+    catch {
+      case e: Exception => println(e)
+    }
+    finally {
+      conn.close()
+    }
+  }
 }
