@@ -28,7 +28,7 @@ class ConanReader extends ISparkJob {
     val conf = new StreamConf()
     conf.gap = Seconds(60)
     conf.topic = "conan"
-    conf.groupId = "groupmy"
+    conf.groupId = "pipe-eng"
     conf.num_partitions = 1
     conf.zkList = "pipe-zk1:2181"
     conf.broker_list = "dx-pipe-sata11-pm:9092,dx-pipe-sata12-pm:9092,dx-pipe-sata13-pm:9092,dx-pipe-sata14-pm:9092,dx-pipe-sata15-pm:9092"
@@ -93,7 +93,7 @@ class ConanReader extends ISparkJob {
                   if (productid == 503 || productid == 523) {
                     vendor = "appleAppStore"
                   }
-                  if (ts != 0 && userid != 0 && productid / 100 == 5) {
+                  if (ts != 0 && userid != 0 && productid / 100 == 5 && productid % 10 == 3) {
                     var old = buckets.getOrElse(userid, (ts, vendor))
                     if (old._1 > ts) { // 更新ts
                       old = (ts, old._2)
