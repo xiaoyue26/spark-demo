@@ -9,5 +9,5 @@ spsg.jar
 
 
 spark-submit --master yarn-cluster --queue realtime \
---class com.xiaoyue26.www.Application --num-executors 4 --executor-memory 4g --name conan_new_user \
-spsg.jar zhan_wei_fu
+--class com.xiaoyue26.www.Application --num-executors 12 --executor-memory 4g --name conan_newuv_from_ape \
+spsg2.jar zhan_wei_fu

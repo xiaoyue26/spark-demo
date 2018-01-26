@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service
   * // Serializable
   */
 @Service
-class ConanReader extends ISparkJob {
+class apeReader extends ISparkJob {
   @Autowired
   var session: SparkSession = _
   var ssc: StreamingContext = _
@@ -26,10 +26,10 @@ class ConanReader extends ISparkJob {
 
   def getConf: StreamConf = {
     val conf = new StreamConf()
-    conf.gap = Seconds(60)
-    conf.topic = "conan"
+    conf.gap = Seconds(120)
+    conf.topic = "ape"
     conf.groupId = "pipe-eng"
-    conf.num_partitions = 1
+    conf.num_partitions = 12
     conf.zkList = "pipe-zk1:2181"
     conf.broker_list = "dx-pipe-sata11-pm:9092,dx-pipe-sata12-pm:9092,dx-pipe-sata13-pm:9092,dx-pipe-sata14-pm:9092,dx-pipe-sata15-pm:9092"
     conf.insertFields = List("userid", "min_time", "vendor") // TODO
@@ -82,7 +82,6 @@ class ConanReader extends ISparkJob {
           iter => {
             val buckets = scala.collection.mutable.Map[Long, (Long, String)]()
             iter.foreach(
-
               keyAndValue => {
                 try {
                   val line = keyAndValue._2
@@ -106,7 +105,8 @@ class ConanReader extends ISparkJob {
                       buckets(userid) = old
                     }
                   }
-                } catch {
+                }
+                catch {
                   case e: Exception => println(e)
                 }
               }
