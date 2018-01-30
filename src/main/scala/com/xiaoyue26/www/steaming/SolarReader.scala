@@ -5,9 +5,10 @@ import com.xiaoyue26.www.steaming.utils.{StreamConf, ZKOffsetsPurgatory}
 import com.xiaoyue26.www.utils.{TimeUtils, ZookeeperIO}
 import kafka.serializer.StringDecoder
 import org.apache.curator.framework.imps.CuratorFrameworkState
+import org.apache.spark.TaskContext
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.dstream.InputDStream
-import org.apache.spark.streaming.kafka.KafkaUtils
+import org.apache.spark.streaming.kafka.{HasOffsetRanges, KafkaUtils, OffsetRange}
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -76,35 +77,9 @@ class SolarReader extends ISparkJob {
 
     kafkaStream.foreachRDD(
       rdd => {
-        rdd.foreachPartition(
-          iter => {
-            //val buckets = scala.collection.mutable.Map[(Long, List[String]), Long]()
-            iter.foreach(
-              keyAndValue => {
-                val line = keyAndValue._2
-                val otherValues = scala.collection.mutable.ListBuffer[String]()
-                val matcher = conf.pat.matcher(line)
-                println(line)
-                /*if (matcher.find()) {
-                  var ts = matcher.group(1).toLong
-                  conf.interval match {
-                    case "SEC" => ts = ts - ts % 1000
-                    case "MIN" => ts = ts - ts % 60000
-                    case "HOU" => ts = ts - ts % 3600000
-                  }
-                  buckets((ts, otherValues.toList)) = buckets.getOrElse((ts, otherValues.toList), 0L) + 1
-                }*/
-              }
-            )
-            println("buckets calculated and start to insertDB at:" + TimeUtils.getCurrentTimestamp)
-            try {
-              //conf.insertIntoDB(buckets)
-            } catch {
-              case e: Exception => println(e)
-            }
-            println("finished inserteDB at:" + TimeUtils.getCurrentTimestamp)
-          }
-        )
+        val offsetRanges = rdd.asInstanceOf[HasOffsetRanges].offsetRanges
+        val words = rdd.flatMapValues(line => line.split("\\s+"))
+
         conf.updatePartitionsOffsets(rdd)
       }
     )

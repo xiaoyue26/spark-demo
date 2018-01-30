@@ -2,7 +2,7 @@ package com.xiaoyue26.www.steaming
 
 import com.xiaoyue26.www.service.ISparkJob
 import com.xiaoyue26.www.steaming.utils.{StreamConf, ZKOffsetsPurgatory}
-import com.xiaoyue26.www.utils.{TimeUtils, ZookeeperIO}
+import com.xiaoyue26.www.utils.{LogParser, TimeUtils, ZookeeperIO}
 import kafka.serializer.StringDecoder
 import org.apache.curator.framework.imps.CuratorFrameworkState
 import org.apache.spark.sql.SparkSession
@@ -26,13 +26,15 @@ class LeoReader extends ISparkJob {
 
   def getConf: StreamConf = {
     val conf = new StreamConf()
-    conf.gap = Seconds(3)
-    conf.topic = "solar"
+    conf.gap = Seconds(60)
+    conf.topic = "leo"
     conf.groupId = "groupmy"
-    conf.num_partitions = 12
+    conf.num_partitions = 1
     conf.zkList = "pipe-zk1:2181"
     conf.broker_list = "dx-pipe-sata11-pm:9092,dx-pipe-sata12-pm:9092,dx-pipe-sata13-pm:9092,dx-pipe-sata14-pm:9092,dx-pipe-sata15-pm:9092"
-    conf.insertFields = List("timestamp", "line")
+    conf.insertFields = List("userid", "min_time", "vendor") // TODO
+    conf.DB_CONNECT = "jdbc:mysql://pipe-writer:3306/pipe_solar?user=pipe&password=pipe123"
+    conf.table = "pipe_solar.leo_user_vendor"
     return conf
   }
 
@@ -78,39 +80,53 @@ class LeoReader extends ISparkJob {
       rdd => {
         rdd.foreachPartition(
           iter => {
-            //val buckets = scala.collection.mutable.Map[(Long, List[String]), Long]()
+            val buckets = scala.collection.mutable.Map[Long, (Long, String)]()
             iter.foreach(
+
               keyAndValue => {
-                val line = keyAndValue._2
-                val otherValues = scala.collection.mutable.ListBuffer[String]()
-                val matcher = conf.pat.matcher(line)
-                println(line)
-                /*if (matcher.find()) {
-                  var ts = matcher.group(1).toLong
-                  conf.interval match {
-                    case "SEC" => ts = ts - ts % 1000
-                    case "MIN" => ts = ts - ts % 60000
-                    case "HOU" => ts = ts - ts % 3600000
+                try {
+                  val line = keyAndValue._2
+                  val rowMap = LogParser.parseLine(line, true)
+                  if (rowMap != null) {
+                    val ts = rowMap.getOrDefault("timestamp", "0").toLong
+                    val userid = rowMap.getOrDefault("userid", "0").toLong
+                    val productid = rowMap.getOrDefault("productid", "0").toLong
+                    var vendor = rowMap.getOrDefault("vendor", "unset")
+                    if (productid == 503 || productid == 523) {
+                      vendor = "appleAppStore"
+                    }
+                    if (ts != 0 && userid != 0 && productid / 100 == 5 && productid % 10 == 3) {
+                      var old = buckets.getOrElse(userid, (ts, vendor))
+                      if (old._1 > ts) { // 更新ts
+                        old = (ts, old._2)
+                      }
+                      if (old._2 == "unset") { // 更新vendor
+                        old = (old._1, vendor)
+                      }
+                      buckets(userid) = old
+                    }
                   }
-                  buckets((ts, otherValues.toList)) = buckets.getOrElse((ts, otherValues.toList), 0L) + 1
-                }*/
+                } catch {
+                  case e: Exception => println(e)
+                }
               }
             )
             println("buckets calculated and start to insertDB at:" + TimeUtils.getCurrentTimestamp)
             try {
-              //conf.insertIntoDB(buckets)
+              conf.insertBucketConan(buckets)
             } catch {
               case e: Exception => println(e)
             }
             println("finished inserteDB at:" + TimeUtils.getCurrentTimestamp)
           }
         )
+        // 所有partition成功以后才commit,因此不会丢数据,只可能重复消费,因此计算需要是幂等的.
         conf.updatePartitionsOffsets(rdd)
       }
     )
     ssc.start()
     ssc.awaitTermination()
-    //ssc.awaitTerminationOrTimeout(60 * 1000)
+    // ssc.awaitTerminationOrTimeout(60 * 1000)
 
   }
 
